@@ -2,7 +2,7 @@
 # 编译相关目录及编译参数设定
 
 # bin文件生成目录
-BIN_DIR=../bin/
+BIN_DIR=../bin
 # obj文件生成目录(属于临时文件)
 OBJ_DIR=/tmp/obj
 # 编译依赖关系文件目录(属于临时文件)
@@ -14,7 +14,9 @@ LINK_LIB=-lMagick++ -lMagickCore -lMagick++ -lMagickCore
 # 头文件路径
 LINK_INC=-I/usr/include/ImageMagick -I/usr/include/ImageMagick
 
-TARGETS=wrte_png transform_image
+TARGETS=write_png transform_image
+
+
 ####################################################################################
 # 以下不要改动
 
@@ -27,7 +29,9 @@ COMM_OBJ=$(filter-out $(MAIN_OBJ), $(ALL_OBJ))
 # 所有bin文件的名称
 BIN_NAME=$(patsubst %.o, %, $(MAIN_OBJ))
 # 所有bin文件的路径
-ALL_BIN=$(addprefix $(BIN_DIR), $(BIN_NAME))
+ALL_BIN=$(addprefix $(BIN_DIR)/, $(BIN_NAME))
+
+all: $(ALL_BIN)
 
 # 自动推导编译规则
 $(BIN_DIR)/%:$(COMM_OBJ) %.o
