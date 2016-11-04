@@ -6,7 +6,7 @@
 using namespace std; 
 using namespace Magick; 
 
-const int COLOR_DEPTH = 16;
+const int COLOR_DEPTH = 32;
 const int HAAR_LEVEL = 6;
 const int MATRIX_SIZE = 1 << HAAR_LEVEL;
 
@@ -75,8 +75,6 @@ inline void InPlaceHaar2D(int n, int *matrix)
             {
                 InPlaceHaarCol(n, i, matrix);
             }
-       
-            InPlaceHaar2D(n, matrix);
         }
     }
 }
@@ -101,7 +99,7 @@ int main(int argc, char *argv[])
         Geometry size("64x64!");
         image.resize(size);
         image.type(GrayscaleType);
-        image.write(string(image_path) + ".256.jpg");
+        image.write(string(image_path) + ".256.jpeg");
     } 
     catch (Exception &error) 
     { 
