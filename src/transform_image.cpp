@@ -16,17 +16,17 @@ void UsageExit(const char *cmd)
     exit(1);
 }
 
-inline void InPlaceHaarRow(int n, int row_num, int *matrix)
+inline void InPlaceHaarRow(int n, int row_num, float *matrix)
 {
     assert(n > 0);
     assert(n <= HAAR_LEVEL);
 
-    static int buff[MATRIX_SIZE];
+    static float buff[MATRIX_SIZE];
 
-    int *a = &buff[0];
-    int *d = &buff[MATRIX_SIZE / 2];
+    float *a = &buff[0];
+    float *d = &buff[MATRIX_SIZE / 2];
 
-    int *row = matrix + (row_num * MATRIX_SIZE);
+    float *row = matrix + (row_num * MATRIX_SIZE);
 
     for (int i = 0; i < (1 << (n - 1)); i++)
     {
@@ -34,18 +34,18 @@ inline void InPlaceHaarRow(int n, int row_num, int *matrix)
         d[i] = (row[i * 2] - row[i * 2 + 1]) / 2; 
     }
 
-    memcpy(row, buff, sizeof(int) * (1 << n));
+    memcpy(row, buff, sizeof(float) * (1 << n));
 }
 
-inline void InPlaceHaarCol(int n, int col_num, int *matrix)
+inline void InPlaceHaarCol(int n, int col_num, float *matrix)
 {
     assert(n > 0);
     assert(n <= HAAR_LEVEL);
 
-    static int buff[MATRIX_SIZE];
+    static float buff[MATRIX_SIZE];
 
-    int *a = &buff[0];
-    int *d = &buff[MATRIX_SIZE / 2];
+    float *a = &buff[0];
+    float *d = &buff[MATRIX_SIZE / 2];
 
     for (int i = 0; i < (1 << (n - 1)); i++)
     {
@@ -60,7 +60,7 @@ inline void InPlaceHaarCol(int n, int col_num, int *matrix)
     }
 }
 
-inline void InPlaceHaar2D(int n, int *matrix)
+inline void InPlaceHaar2D(int n, float *matrix)
 {
     while (n > 0)
     {
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
     assert(w == MATRIX_SIZE);
     assert(h == MATRIX_SIZE);
 
-    int matrix[MATRIX_SIZE * MATRIX_SIZE];
+    float matrix[MATRIX_SIZE * MATRIX_SIZE];
     int value = 0;
 
     for (int i = 0; i < MATRIX_SIZE; i++)
@@ -125,8 +125,9 @@ int main(int argc, char *argv[])
         for (int j = 0; j < MATRIX_SIZE; j++)
         {
             Color color = pixels[w * i + j];
-            value = color.redQuantum() / (65535 / COLOR_DEPTH);
-            matrix[MATRIX_SIZE * i + j] = value;
+            // value = color.redQuantum() / (65536 / COLOR_DEPTH);
+            value = color.redQuantum();
+            matrix[MATRIX_SIZE * i + j] = (float)value;
         }
     }
 
@@ -136,7 +137,9 @@ int main(int argc, char *argv[])
     {
         for (int j = 0; j < MATRIX_SIZE; j++)
         {
-            printf("%d ", matrix[MATRIX_SIZE * i + j]);
+            // printf("%d ", (int)matrix[MATRIX_SIZE * i + j]);
+            // printf("%.02f ", matrix[MATRIX_SIZE * i + j]);
+            printf("%d ", (int)((matrix[MATRIX_SIZE * i + j] / (65536 / COLOR_DEPTH)) + 0.5));
         }
 
         printf("\n");
