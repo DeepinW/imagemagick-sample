@@ -14,7 +14,7 @@ LINK_LIB=-lMagick++ -lMagickCore -lMagick++ -lMagickCore
 # 头文件路径
 LINK_INC=-I/usr/include/ImageMagick -I/usr/include/ImageMagick
 
-TARGETS=test_haar2d
+TARGETS=test_haar2d test_haar_finger
 
 ####################################################################################
 # 以下不要改动
