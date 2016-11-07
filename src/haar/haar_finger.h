@@ -29,7 +29,7 @@ struct HaarFingerDiff
     bool id_diff;
     uint32_t accerator_diff_cnt;
     uint32_t data_diff_cnt;
-    uint32_t data_valid_cnt;
+    uint32_t data_total_cnt;
     float match_confidence;
 };
 

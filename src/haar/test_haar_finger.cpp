@@ -46,17 +46,17 @@ int main(int argc, char *argv[])
 
         if (MatchHaarFinger(src_finger, finger, &diff))
         {
-            printf("[match][%s][%.2f][%u][%u][%u][%u]",
+            printf("[match][%s][%.2f][%u][%u][%u][%u]\n",
                     image_path[i], diff.match_confidence,
                     diff.id_diff, diff.accerator_diff_cnt, 
-                    diff.data_diff_cnt, diff.data_valid_cnt);
+                    diff.data_diff_cnt, diff.data_total_cnt);
         }
         else
         {
-            printf("[miss ][%s][%.2f][%u][%u][%u][%u]", 
+            printf("[miss ][%s][%.2f][%u][%u][%u][%u]\n", 
                     image_path[i], diff.match_confidence,
                     diff.id_diff, diff.accerator_diff_cnt, 
-                    diff.data_diff_cnt, diff.data_valid_cnt);
+                    diff.data_diff_cnt, diff.data_total_cnt);
         }
     }
 

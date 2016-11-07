@@ -8,7 +8,7 @@ OBJ_DIR=/tmp/obj
 # 编译依赖关系文件目录(属于临时文件)
 DEPS_DIR=/tmp/deps
 # 编译参数(调试信息、编译等级等参数)
-CFLAGS=-g -O2 -fopenmp 
+CFLAGS=-g -O2 -fopenmp -Werror -Wall
 # lib文件路径及链接的lib
 LINK_LIB=-lMagick++ -lMagickCore -lMagick++ -lMagickCore
 # 头文件路径

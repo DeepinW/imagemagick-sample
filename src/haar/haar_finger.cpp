@@ -27,7 +27,7 @@ bool HaarTransform::LoadImage(const char *image_path)
     }
     catch (Exception &error) 
     { 
-        cout << "Caught exception: " << error.what() << endl; 
+        cerr << "Caught exception: " << error.what() << endl; 
         return false; 
     }
 
@@ -106,7 +106,7 @@ bool MatchHaarFinger(const HaarFinger &a, const HaarFinger &b, HaarFingerDiff *d
         return false;
     }
 
-    for (int i = 0; i < sizeof(a.accerator); i++)
+    for (size_t i = 0; i < sizeof(a.accerator); i++)
     {
         if (a.accerator[i] != b.accerator[i])
         {
@@ -114,32 +114,24 @@ bool MatchHaarFinger(const HaarFinger &a, const HaarFinger &b, HaarFingerDiff *d
         }
     }
 
-    if (diff->accerator_diff_cnt > 3)
+    if (diff->accerator_diff_cnt > 4)
     {
         return false;
     }
 
-    for (int i = 0; i < sizeof(a.data); i++)
+    for (size_t i = 0; i < sizeof(a.data); i++)
     {
         if (a.data[i] != b.data[i])
         {
             ++(diff->data_diff_cnt);
         }
-
-        if (a.data[i] != 0 || b.data[i] != 0)
-        {
-            ++(diff->data_valid_cnt);
-        }
     }
 
-    if (diff->data_valid_cnt == 0 || diff->data_diff_cnt == 0)
-    {
-        diff->match_confidence = 1.0f;
-    }
-    else
-    {
-        diff->match_confidence = (float)diff->data_diff_cnt / (float)diff->data_valid_cnt;
-    }
+    diff->data_total_cnt = (sizeof(a.data) / sizeof(a.data[0]));
+
+    diff->match_confidence = 1.0 - 
+        ((float)diff->data_diff_cnt / (float)diff->data_total_cnt);
+
 
     return true;
 }
