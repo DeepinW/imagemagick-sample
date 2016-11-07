@@ -17,21 +17,38 @@ const int HAAR_POINT = 6;
 const int COLOR_RANGE = 65536 / COLOR_DEPTH;
 const int MAT_SIZE = 1 << HAAR_POINT;
 
-typedef int HaarFingerData[MAT_SIZE * MAT_SIZE];
+struct HaarFinger
+{
+    uint32_t id;
+    uint8_t accerator[12];
+    uint8_t data[MAT_SIZE * MAT_SIZE];
+};
 
-class HaarFinger
+struct HaarFingerDiff
+{
+    bool id_diff;
+    uint32_t accerator_diff_cnt;
+    uint32_t data_diff_cnt;
+    uint32_t data_valid_cnt;
+    float match_confidence;
+};
+
+
+bool MatchHaarFinger(const HaarFinger &a, const HaarFinger &b, HaarFingerDiff *diff);
+
+class HaarTransform
 {
 public:
 
-    HaarFinger();
+    HaarTransform();
 
-    ~HaarFinger();
+    ~HaarTransform();
 
     bool LoadImage(const char *image_path);
 
     bool LoadImage(const void *image_data, size_t size);
 
-    void GetFinger(uint32_t *finger_id, HaarFingerData *finger_data);
+    void GetFinger(HaarFinger *finger);
 
 private:
 

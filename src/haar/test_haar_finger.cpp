@@ -1,24 +1,72 @@
 #include "haar_finger.h"
 
+void UsageExit(const char *cmd)
+{
+    printf("Usage:\n  %s <src_image_path> <image_path1> [image_path2...]\n", cmd);
+    exit(1);
+}
+
 int main(int argc, char *argv[])
 {
-    const char *image_path = argv[1];
-
-    HaarFinger haar_finger;
-
-    if (!haar_finger.LoadImage(image_path))
+    if (argc < 2)
     {
-        printf("Load image fail: %s\n", image_path);
+        UsageExit(argv[0]);
+    }
+
+    InitializeMagick(*argv);
+
+    const char *src_image_path = argv[1];
+
+    const char * const *image_path = &argv[2];
+    int image_cnt = argc - 2;
+
+    HaarTransform transform;
+
+    HaarFinger src_finger;
+    HaarFinger finger;
+    HaarFingerDiff diff;
+
+    if (!transform.LoadImage(src_image_path))
+    {
+        printf("Load image fail: %s\n", src_image_path);
         return 1;
     }
 
-    uint32_t finger_id;
-    HaarFingerData finger_data;
-    memset(&finger_data, 0, sizeof(finger_data));
+    transform.GetFinger(&src_finger);
 
-    haar_finger.GetFinger(&finger_id, &finger_data);
+    for (int i = 0; i < image_cnt; i++)
+    {
+        if (!transform.LoadImage(image_path[i]))
+        {
+            printf("Load image fail: %s\n", image_path[i]);
+            return 1;
+        }
 
-    printf("finger_id = %x\n", finger_id);
+        transform.GetFinger(&finger);
+
+        if (MatchHaarFinger(src_finger, finger, &diff))
+        {
+            printf("[match][%s][%.2f][%u][%u][%u][%u]",
+                    image_path[i], diff.match_confidence,
+                    diff.id_diff, diff.accerator_diff_cnt, 
+                    diff.data_diff_cnt, diff.data_valid_cnt);
+        }
+        else
+        {
+            printf("[miss ][%s][%.2f][%u][%u][%u][%u]", 
+                    image_path[i], diff.match_confidence,
+                    diff.id_diff, diff.accerator_diff_cnt, 
+                    diff.data_diff_cnt, diff.data_valid_cnt);
+        }
+    }
 
     return 0;
 }
+
+//gzrd_Lib_CPP_Version_ID--start
+#ifndef GZRD_SVN_ATTR
+#define GZRD_SVN_ATTR "0"
+#endif
+static char gzrd_Lib_CPP_Version_ID[] __attribute__((used))="$HeadURL$ $Id$ " GZRD_SVN_ATTR "__file__";
+// gzrd_Lib_CPP_Version_ID--end
+
