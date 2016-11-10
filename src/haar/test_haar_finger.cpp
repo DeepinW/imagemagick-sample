@@ -24,7 +24,6 @@ int main(int argc, char *argv[])
 
     HaarFinger src_finger;
     HaarFinger finger;
-    HaarFingerDiff diff;
 
     if (!transform.LoadImage(src_image_path))
     {
@@ -44,20 +43,17 @@ int main(int argc, char *argv[])
 
         transform.GetFinger(&finger);
 
-        if (MatchHaarFinger(src_finger, finger, &diff))
+        bool result = MatchHaarFinger(src_finger, finger, 0.2f);
+
+        printf("[%s] %s\n", result ? "match" : "miss ", image_path[i]);
+
+        for (size_t i = 0; i < 10; i++)
         {
-            printf("[match][%s][%.2f][%u][%u][%u][%u]\n",
-                    image_path[i], diff.match_confidence,
-                    diff.id_diff, diff.accerator_diff_cnt, 
-                    diff.data_diff_cnt, diff.data_total_cnt);
+            printf("%.2f\t", finger.intensity[i]);
         }
-        else
-        {
-            printf("[miss ][%s][%.2f][%u][%u][%u][%u]\n", 
-                    image_path[i], diff.match_confidence,
-                    diff.id_diff, diff.accerator_diff_cnt, 
-                    diff.data_diff_cnt, diff.data_total_cnt);
-        }
+
+        printf("\n");
+
     }
 
     return 0;

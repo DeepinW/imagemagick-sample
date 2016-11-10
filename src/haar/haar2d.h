@@ -7,10 +7,10 @@ class Haar2D
 {
 public:
 
-    Haar2D(int point);
+    Haar2D(int points);
     ~Haar2D();
 
-    void Transform(T *mat);
+    void Transform(T *mat, int max_iteration = 0);
 
     size_t GetMatSize() const;
 
@@ -21,16 +21,16 @@ private:
 
 private:
 
-    int point_;
+    int points_;
     size_t mat_size_;
     T *buff_;
 };
 
 template<class T>
-Haar2D<T>::Haar2D(int point):
-    point_(point)
+Haar2D<T>::Haar2D(int points):
+    points_(points)
 {
-    mat_size_ = 1 << point;
+    mat_size_ = 1 << points;
     buff_ = new T[mat_size_ * mat_size_];
     assert(buff_ != NULL);
 }
@@ -45,7 +45,7 @@ template<class T>
 void Haar2D<T>::HaarRow(int n, int row_num, T *mat)
 {
     assert(n > 0);
-    assert(n <= point_);
+    assert(n <= points_);
 
     T *a = &buff_[0];
     T *d = &buff_[1 << (n - 1)];
@@ -65,7 +65,7 @@ template<class T>
 void Haar2D<T>::HaarCol(int n, int col_num, T *mat)
 {
     assert(n > 0);
-    assert(n <= point_);
+    assert(n <= points_);
 
     T *a = &buff_[0];
     T *d = &buff_[1 << (n - 1)];
@@ -84,12 +84,17 @@ void Haar2D<T>::HaarCol(int n, int col_num, T *mat)
 }
 
 template<class T>
-void Haar2D<T>::Transform(T *mat)
+void Haar2D<T>::Transform(T *mat, int max_iteration)
 {
-    int n = point_;
+    int n = points_;
 
     while (n > 0)
     {
+        if (max_iteration > 0 && (points_ - n >= max_iteration))
+        {
+            break;
+        }
+
         for (int i = 0; i < (1 << n); i++)
         {
             HaarRow(n, i, mat);

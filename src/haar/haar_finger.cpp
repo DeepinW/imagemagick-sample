@@ -1,8 +1,35 @@
 #include "haar_finger.h"
+#include <cmath>
 
 HaarTransform::HaarTransform():
     haar2d_(HAAR_POINT)
 {
+    int index = (int)(sizeof(region_) / sizeof(region_[0])) - 1;
+    int size = MAT_SIZE;
+
+    for (int iteration = 0; iteration < 3; iteration++)
+    {
+        size >>= 1;
+        
+        region_[index].x = size;
+        region_[index].y = size;
+        region_[index--].size = size;
+        
+        region_[index].x = 0;
+        region_[index].y = size;
+        region_[index--].size = size;
+
+        region_[index].x = size;
+        region_[index].y = 0;
+        region_[index--].size = size;
+    }
+
+    assert(index == 0);
+
+    region_[index].x = 0;
+    region_[index].y = 0;
+    region_[index].size = size;
+
 }
 
 HaarTransform::~HaarTransform()
@@ -60,80 +87,60 @@ void HaarTransform::ReadPixelsAndTransform(Image *image)
         }
     }
 
-    haar2d_.Transform(mat_);
+    haar2d_.Transform(mat_, 3);
 }
 
 void HaarTransform::GetFinger(HaarFinger* finger)
 {
-    for (int i = 0; i < MAT_SIZE; i++)
+    for (size_t i = 0; i < sizeof(region_) / sizeof(region_[0]); i++)
     {
-        for (int j = 0; j < MAT_SIZE; j++)
-        {
-            finger->data[MAT_SIZE * i + j] = 
-                (uint8_t)((mat_[MAT_SIZE * i + j] / COLOR_RANGE) + 0.5);
-        }
+        finger->intensity[i] = GetIntensity(region_[i]);
     }
-    
-    finger->id = (finger->data[0] << 24) +
-                 (finger->data[1] << 16) +
-                 (finger->data[MAT_SIZE] << 8) +
-                 (finger->data[MAT_SIZE + 1]);
-
-
-    finger->accerator[0] = finger->data[2];
-    finger->accerator[1] = finger->data[3];
-    finger->accerator[2] = finger->data[MAT_SIZE + 2];
-    finger->accerator[3] = finger->data[MAT_SIZE + 3];
-
-    finger->accerator[4] = finger->data[MAT_SIZE * 2];
-    finger->accerator[5] = finger->data[MAT_SIZE * 2 + 1];
-    finger->accerator[6] = finger->data[MAT_SIZE * 3];
-    finger->accerator[7] = finger->data[MAT_SIZE * 3 + 1];
-
-    finger->accerator[8] = finger->data[MAT_SIZE * 2 + 2];
-    finger->accerator[9] = finger->data[MAT_SIZE * 2 + 3];
-    finger->accerator[10] = finger->data[MAT_SIZE * 3 + 2];
-    finger->accerator[11] = finger->data[MAT_SIZE * 3 + 3];
 }
 
-bool MatchHaarFinger(const HaarFinger &a, const HaarFinger &b, HaarFingerDiff *diff)
+bool MatchHaarFinger(const HaarFinger &src, const HaarFinger &target, float max_ratio)
 {
-    memset(diff, 0, sizeof(*diff));
+    float diff = 0.0f;
+    float ratio = 0.0f;
 
-    if (a.id != b.id)
+    for (size_t i = 0; i < sizeof(src.intensity) / sizeof(target.intensity[0]); i++)
     {
-        diff->id_diff = true;
-        return false;
-    }
-
-    for (size_t i = 0; i < sizeof(a.accerator); i++)
-    {
-        if (a.accerator[i] != b.accerator[i])
+        diff = fabs(src.intensity[i] - target.intensity[i]);
+        if (src.intensity[i] != 0.0f)
         {
-            ++(diff->accerator_diff_cnt);
+            ratio = diff / abs(src.intensity[i]);
+        }
+        else
+        {
+            ratio = INFINITY;
+        }
+
+        if (ratio > max_ratio)
+        {
+            return false;
         }
     }
-
-    if (diff->accerator_diff_cnt > 4)
-    {
-        return false;
-    }
-
-    for (size_t i = 0; i < sizeof(a.data); i++)
-    {
-        if (a.data[i] != b.data[i])
-        {
-            ++(diff->data_diff_cnt);
-        }
-    }
-
-    diff->data_total_cnt = (sizeof(a.data) / sizeof(a.data[0]));
-
-    diff->match_confidence = 1.0 - 
-        ((float)diff->data_diff_cnt / (float)diff->data_total_cnt);
-
 
     return true;
+}
+
+float HaarTransform::GetIntensity(const Region &region)
+{
+    assert(region.size > 0);
+    assert(region.x >= 0 && region.x + region.size <= MAT_SIZE);
+    assert(region.y >= 0 && region.y + region.size <= MAT_SIZE);
+
+    float sum_power = 0.0f;
+
+    for (int i = region.x; i < region.x + region.size; i++)
+    {
+        for (int j = region.y; j < region.y + region.size; j++)
+        {
+            sum_power += (mat_[i * MAT_SIZE + j] * mat_[i * MAT_SIZE + j]);
+        }
+    }
+
+    return sqrt(sum_power / (region.size * region.size));
 }
 
 //gzrd_Lib_CPP_Version_ID--start
